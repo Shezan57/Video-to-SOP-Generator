@@ -1,13 +1,31 @@
-# Quick Start Guide - Video-to-SOP Generator
+# Quick Start Guide - Video-to-SOP Generator v2.0 🚀
+
+Get started in 5 minutes!
+
+---
+
+## Prerequisites Checklist
+
+- [ ] Python 3.8+ installed
+- [ ] Git installed (optional)
+- [ ] FFmpeg installed ([Guide](FFMPEG_SETUP.md))
+- [ ] Google Gemini API key ([Get here](https://makersuite.google.com/app/apikey))
+- [ ] Groq API key ([Get here](https://console.groq.com/))
+
+---
 
 ## Step-by-Step Setup
 
 ### 1. Install Python Dependencies
 
-First, activate your virtual environment (if you haven't already):
+First, activate your virtual environment:
 
 ```powershell
 # Windows PowerShell
+.\myvenv\Scripts\Activate.ps1
+
+# Or create new venv if needed
+python -m venv myvenv
 .\myvenv\Scripts\Activate.ps1
 ```
 
@@ -17,9 +35,25 @@ Then install the required packages:
 pip install -r requirements.txt
 ```
 
-### 2. Set Up Your API Key
+### 2. Install FFmpeg (for 15x faster processing!)
 
-1. Get a Gemini API key from: https://makersuite.google.com/app/apikey
+**Windows:**
+```powershell
+choco install ffmpeg
+```
+
+**Verify installation:**
+```powershell
+ffmpeg -version
+```
+
+See [FFMPEG_SETUP.md](FFMPEG_SETUP.md) for detailed instructions.
+
+### 3. Set Up Your API Keys
+
+1. Get your API keys:
+   - **Gemini**: https://makersuite.google.com/app/apikey
+   - **Groq**: https://console.groq.com/
 
 2. Create a `.env` file in the project root:
 
@@ -28,26 +62,14 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-3. Edit `.env` and add your API key:
+3. Edit `.env` and add your API keys:
 
 ```
-GEMINI_API_KEY=AIzaSyYourActualAPIKeyHere
+GOOGLE_API_KEY=your_google_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 3. Test the Installation
-
-Run the test suite:
-
-```powershell
-python demo.py
-```
-
-This will:
-- ✓ Test video processing
-- ✓ Test AI connection
-- ✓ Test PDF generation
-
-### 4. Prepare a Sample Video
+### 4. Prepare a Test Video
 
 For your first test, use a short (30-60 second) video showing:
 - A simple task or procedure
