@@ -257,7 +257,7 @@ For questions or issues, please check:
 ## Credits
 
 Built with:
-- Google Gemini 1.5 Pro
+- Google Gemini 2.5 Pro
 - OpenCV
 - ReportLab
 
