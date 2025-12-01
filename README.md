@@ -8,10 +8,11 @@ This tool uses multimodal AI (Gemini 1.5 Pro) to watch industrial/manufacturing 
 
 ## Features
 
-- 🎥 **Video Processing**: Extracts key frames from training videos
-- 🤖 **AI Analysis**: Uses Gemini 1.5 Pro to understand and document procedures
+- 🎥 **Video Processing**: Extracts key frames from training videos using FFmpeg (15x faster!)
+- 🎙️ **Audio Transcription**: High-quality speech-to-text using Whisper AI
+- 🤖 **AI Analysis**: Uses Gemini 1.5 Flash to understand and document procedures
 - 📄 **PDF Generation**: Creates professional SOP manuals with images
-- ⚡ **Two Modes**: Frame extraction or direct video upload
+- ⚡ **Fast Processing**: FFmpeg-powered frame extraction for optimal performance
 - 🔒 **Safety Notes**: Automatically identifies safety considerations
 
 ## Installation
@@ -19,7 +20,9 @@ This tool uses multimodal AI (Gemini 1.5 Pro) to watch industrial/manufacturing 
 ### Prerequisites
 
 - Python 3.8+
+- FFmpeg ([Installation guide](FFMPEG_SETUP.md))
 - Google Gemini API key ([Get one here](https://makersuite.google.com/app/apikey))
+- Groq API key for Whisper transcription ([Get one here](https://console.groq.com/))
 
 ### Setup
 

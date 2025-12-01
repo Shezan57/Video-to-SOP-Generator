@@ -6,6 +6,8 @@ Extracts frames from video files at specified intervals
 import cv2
 import base64
 import os
+import subprocess
+import tempfile
 from typing import List, Dict
 from pathlib import Path
 
@@ -26,7 +28,7 @@ class VideoFrameExtractor:
     
     def extract_frames(self, video_path: str, output_dir: str = None) -> List[Dict]:
         """
-        Extract frames from video at specified intervals
+        Extract frames from video at specified intervals using FFmpeg
         
         Args:
             video_path: Path to the video file
@@ -42,6 +44,93 @@ class VideoFrameExtractor:
                     "image_data": base64_encoded_image
                 }
             ]
+        """
+        if not os.path.exists(video_path):
+            raise FileNotFoundError(f"Video file not found: {video_path}")
+        
+        # Get video info first
+        info = self.get_video_info(video_path)
+        duration = info['duration']
+        
+        print(f"Video Info: {duration:.2f}s, {info['fps']:.2f} FPS, {info['total_frames']} frames")
+        print(f"Extracting 1 frame every {self.interval_seconds} seconds using FFmpeg...")
+        
+        # Create output directory or use temp directory
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            temp_dir = output_dir
+            cleanup_temp = False
+        else:
+            temp_dir = tempfile.mkdtemp()
+            cleanup_temp = True
+        
+        try:
+            # Build FFmpeg command
+            cmd = [
+                'ffmpeg',
+                '-i', video_path,
+                '-vf', f'fps=1/{self.interval_seconds},scale={self.resize_width}:-1',
+                '-q:v', '2',  # High quality JPEG
+                '-threads', '0',  # Auto-detect optimal thread count
+                '-loglevel', 'error',  # Only show errors
+                f'{temp_dir}/frame_%06d.jpg'
+            ]
+            
+            # Execute FFmpeg
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                raise Exception(f"FFmpeg error: {result.stderr}")
+            
+            # Load extracted frames
+            frames = []
+            frame_files = sorted(Path(temp_dir).glob('frame_*.jpg'))
+            
+            if not frame_files:
+                raise Exception("No frames were extracted. Check if FFmpeg is installed correctly.")
+            
+            for img_file in frame_files:
+                # Extract frame number from filename (frame_000001.jpg -> 1)
+                frame_num = int(img_file.stem.split('_')[1])
+                timestamp = (frame_num - 1) * self.interval_seconds
+                
+                # Read and encode to base64
+                with open(img_file, 'rb') as f:
+                    image_bytes = f.read()
+                    base64_image = base64.b64encode(image_bytes).decode('utf-8')
+                
+                frame_info = {
+                    "id": frame_num,
+                    "timestamp": timestamp,
+                    "image_data": base64_image
+                }
+                
+                # Add image path if saving permanently
+                if output_dir:
+                    frame_info["image_path"] = str(img_file)
+                
+                frames.append(frame_info)
+                print(f"Loaded frame {len(frames)} at {timestamp:.2f}s")
+            
+            print(f"Total frames extracted: {len(frames)}")
+            return frames
+            
+        finally:
+            # Clean up temp directory if created
+            if cleanup_temp and os.path.exists(temp_dir):
+                import shutil
+                shutil.rmtree(temp_dir)
+    
+    def extract_frames_opencv(self, video_path: str, output_dir: str = None) -> List[Dict]:
+        """
+        Legacy OpenCV method for frame extraction (slower but no FFmpeg dependency)
+        
+        Args:
+            video_path: Path to the video file
+            output_dir: Directory to save extracted frames (optional)
+            
+        Returns:
+            List of dictionaries containing frame info
         """
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")

@@ -5,12 +5,14 @@ Main application file that orchestrates the entire pipeline
 
 import os
 import sys
+import time
 from pathlib import Path
 from dotenv import load_dotenv
 
 from video_processor import VideoFrameExtractor
 from sop_analyzer import SOPAnalyzer
 from pdf_generator import SOPPDFGenerator
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -54,6 +56,9 @@ class VideoToSOPGenerator:
         print(f"Context: {context if context else 'Auto-detected'}")
         print("=" * 60)
         
+        # Start total timing
+        total_start_time = time.time()
+        
         # Get video info
         video_info = self.video_processor.get_video_info(video_path)
         print(f"\nVideo Information:")
@@ -68,13 +73,16 @@ class VideoToSOPGenerator:
         
         # Step 1a: Extract audio transcript (using Whisper via Groq)
         audio_transcript = ""
+        audio_start_time = time.time()
         try:
             from whisper_transcription import transcribe_video_audio
             groq_api_key = os.getenv("GROQ_API_KEY")
             if groq_api_key:
                 audio_transcript = transcribe_video_audio(video_path, groq_api_key) or ""
                 if audio_transcript:
+                    audio_elapsed = time.time() - audio_start_time
                     print(f"✓ Audio transcript extracted: {len(audio_transcript)} characters")
+                    print(f"  Time: {int(audio_elapsed // 60)}m {int(audio_elapsed % 60)}s")
             else:
                 print("⚠️  GROQ_API_KEY not found, skipping audio transcription")
         except Exception as e:
@@ -83,34 +91,41 @@ class VideoToSOPGenerator:
         # Initialize frames
         frames = []
         
-        print("Extracting frames from video...")
+        print("\nExtracting frames from video...")
         
         # Create temp directory for frames
         frames_dir = "extracted_frames"
         os.makedirs(frames_dir, exist_ok=True)
         
+        # Time frame extraction
+        frame_start_time = time.time()
         frames = self.video_processor.extract_frames(
             video_path,
             output_dir=frames_dir
         )
+        frame_elapsed = time.time() - frame_start_time
         
-        print(f"Extracted {len(frames)} frames")
+        print(f"\n✓ Extracted {len(frames)} frames")
+        print(f"  Time: {int(frame_elapsed // 60)}m {int(frame_elapsed % 60)}s")
         
         # Step 2: Analyze with AI
         print("\n" + "=" * 60)
         print("STEP 2: AI ANALYSIS (with Audio Transcript)")
         print("=" * 60)
-        
+        analysis_start_time = time.time()
         sop_data = self.analyzer.analyze_video_frames(frames, context, audio_transcript)
+        analysis_elapsed = time.time() - analysis_start_time
         
-        print(f"\nGenerated SOP: {sop_data['title']}")
-        print(f"Total steps: {len(sop_data['steps'])}")
-        
+        print(f"\n✓ Generated SOP: {sop_data['title']}")
+        print(f"  Total steps: {len(sop_data['steps'])}")
+        print(f"  Time: {int(analysis_elapsed // 60)}m {int(analysis_elapsed % 60)}s")
+
         # Step 3: Generate PDF
         print("\n" + "=" * 60)
         print("STEP 3: PDF GENERATION")
         print("=" * 60)
         
+        pdf_start_time = time.time()
         # Pass the extracted frames to PDF generator
         self.pdf_generator.generate_sop_pdf(
             sop_data,
@@ -118,6 +133,10 @@ class VideoToSOPGenerator:
             output_pdf,
             company_name
         )
+        pdf_elapsed = time.time() - pdf_start_time
+        
+        # Calculate total time
+        total_elapsed = time.time() - total_start_time
         
         print("\n" + "=" * 60)
         print("COMPLETE!")
@@ -125,6 +144,17 @@ class VideoToSOPGenerator:
         print(f"SOP PDF saved to: {output_pdf}")
         print(f"Title: {sop_data['title']}")
         print(f"Steps: {len(sop_data['steps'])}")
+        print("\n" + "=" * 60)
+        print("TIMING SUMMARY")
+        print("=" * 60)
+        if audio_transcript:
+            print(f"  Audio Transcription: {int(audio_elapsed // 60)}m {int(audio_elapsed % 60)}s")
+        print(f"  Frame Extraction:    {int(frame_elapsed // 60)}m {int(frame_elapsed % 60)}s")
+        print(f"  AI Analysis:         {int(analysis_elapsed // 60)}m {int(analysis_elapsed % 60)}s")
+        print(f"  PDF Generation:      {int(pdf_elapsed // 60)}m {int(pdf_elapsed % 60)}s")
+        print(f"  {'─' * 58}")
+        print(f"  TOTAL TIME:          {int(total_elapsed // 60)}m {int(total_elapsed % 60)}s")
+        print("=" * 60)
         
         return sop_data
 

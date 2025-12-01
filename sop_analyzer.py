@@ -120,15 +120,22 @@ Frame Timestamps:
 Your job is to:
 1. Watch the sequence carefully
 2. Listen to the audio transcript (if provided) for additional context
-3. Identify distinct actions/steps being performed
+3. Identify distinct actions/steps being performed (including disassembly AND reassembly)
 4. Write clear, actionable instructions for each step
 5. Select the best timestamp where each action is most clearly visible
 6. Provide reasoning for why that step matters
 
+CRITICAL INSTRUCTIONS FOR REPAIR/MAINTENANCE PROCEDURES:
+- If the procedure involves disassembly (removing parts), YOU MUST include the reassembly steps
+- After repair/replacement, include all steps to put components back together in REVERSE order
+- Reference the disassembly steps when writing reassembly (e.g., "Reinstall the cover removed in Step 3")
+- Include torque specifications, alignment checks, and final verification steps
+- For each removed component, ensure there is a corresponding reinstallation step
+
 Output Format (STRICT JSON):
 {{
   "title": "Descriptive Task Name",
-  "description": "Brief overview of the entire process",
+  "description": "Brief overview of the entire process (mention if it includes disassembly and reassembly)",
   "safety_notes": ["Safety consideration 1", "Safety consideration 2"],
   "steps": [
     {{
@@ -146,7 +153,10 @@ Important Guidelines:
 - Be specific about tools, parts, and measurements
 - Include safety warnings if relevant
 - Choose timestamps where the action is CLEAREST
-- Aim for 5-15 steps depending on complexity
+- For repair procedures: Include BOTH disassembly steps AND reassembly steps
+- For reassembly: Reference which parts are being reinstalled (e.g., "Reinstall the valve cover", "Reattach the bolts")
+- Include final verification steps (e.g., "Test the repair", "Check for leaks", "Verify operation")
+- Aim for 5-20 steps depending on complexity
 
 Output ONLY valid JSON. Do not include any markdown formatting or code blocks.
 """

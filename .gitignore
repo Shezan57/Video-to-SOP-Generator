@@ -45,6 +45,9 @@ env/
 *.mp4
 *.avi
 *.mov
+*.webm
+*.webm
+*.mkv
 extracted_frames/
 test_frames/
 temp_*.jpg
